@@ -1,5 +1,6 @@
 package com.wangq.springcloud.controller;
 
+import com.netflix.hystrix.contrib.javanica.annotation.DefaultProperties;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.wangq.springcloud.service.PaymentHystrixService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
+@DefaultProperties(defaultFallback = "paymentGlobalFallbackMethod")
 public class OrderHystrixController {
 
     @Autowired
@@ -33,6 +35,13 @@ public class OrderHystrixController {
         return paymentHystrixService.paymentInfo_timeout(id);
     }
 
+    @GetMapping("/consumer/payment/hystrix/global/{id}")
+    @HystrixCommand
+    public String paymentInfo_timeout2(@PathVariable("id") Integer id) {
+        int num = 10/0;
+        return paymentHystrixService.paymentInfo_timeout(id);
+    }
+
     /**
      * 服务降级
      * @param id
@@ -42,4 +51,10 @@ public class OrderHystrixController {
         return "消费80，支付系统繁忙请10秒后再试";
     }
 
+    /**
+     * 服务降级
+     */
+    public String paymentGlobalFallbackMethod() {
+        return "全局异常处理信息，支付系统繁忙请10秒后再试";
+    }
 }
